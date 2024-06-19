@@ -125,20 +125,26 @@ Item {
         target: findNotificationToolDataSource
         function onExited(exitCode, exitStatus, stdout, stderr){
             if (stdout) {
-                // Many Linux distros have two notification tools: notify-send and zenity
-                var paths = stdout.trim().split("\n")
-                var path1 = paths[0]
-                var path2 = paths[1]
+                var paths = stdout.trim().split("\n");
+                var notificationTool = "";
 
+                // Many Linux distros have two notification tools: notify-send and zenity
                 // Prefer notify-send because it allows using an icon; zenity v3.44.0 does not accept an icon option
-                if (path1 && path1.trim().endsWith("notify-send")) {
-                    plasmoid.configuration.notificationToolPath = "notify-send"
-                } else if (path2 && path2.trim().endsWith("notify-send")) {
-                    plasmoid.configuration.notificationToolPath = "notify-send"
-                } else if (path1 && path1.trim().endsWith("zenity")) {
-                    plasmoid.configuration.notificationToolPath = "zenity"
+                for (let i = 0; i < paths.length; ++i) {
+                    let currentPath = paths[i].trim();
+                    
+                    if (currentPath.endsWith("notify-send")) {
+                        notificationTool = "notify-send";
+                        break;
+                    } else if (currentPath.endsWith("zenity")) {
+                        notificationTool = "zenity";
+                    }
+                }
+
+                if (notificationTool) {
+                    plasmoid.configuration.notificationToolPath = notificationTool;
                 } else {
-                    console.warn("No compatible notification tool found.")
+                    console.warn("No compatible notification tool found.");
                 }
             }
 
